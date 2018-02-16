@@ -1,12 +1,10 @@
 language: cpp
 
-# What branches are we reacting upon.
 branches:
-    only:
-    - /^master$/
-    - /^pre-release$/
+  only:
+  - "/^master$/"
+  - "/^pre-release$/"
 
-# Downloading ccache's cache is around 6s, uploading is around 3s.
 cache: ccache
 
 compiler:
@@ -23,15 +21,12 @@ install:
 - "[ $CC = gcc ] && export CC=gcc-6 || true"
 - "[ $CXX = g++ ] && export CXX=g++-6 || true"
 
-
 script:
 - mkdir -p build && cd build && cmake .. && make && make test
-
 
 notifications:
   email:
     on_success: never
     on_failure: never
   slack:
-    secure: "sSVMQUzdW/EI7wuu2TThGI+Pr1CE03yNuY5EG0a1fJ8jz3pURnTNFz1Y/rkwLebKkySNotECb/wOfd31LvdSvrHi+XXeajgA8oyNrmQoCJtWQ5jdWI94hOzWZIlGPPtBqCHQoMYKTmSLg2Fk/Oc+scE31quOEY1F9xgnQvbek3fNKuZdY3cAa9marERfQHz4s2dEuTXk917DJa424MNa9bozvoYfGLobxUzOSJKcL0mDFmBXH4cTljk53/+1huAvn73o57PvmfKNdGCbgQsSg7k/8eSYhEkS6O77LdQLp4YD5huRZgByRiltuegDtncoyGjQ/aIYyVGei/m+dHpQ5cfITn1ipDK5bDQNkIaCnL0rnAg+iOuYFtKQl7TC0pLygZd4roT11m5Z+yLlpcOiPSCszxin9E5feRYPJrLdocz1/ib9ZwwQoZ3yZbl17HmVfDWUuGFZyqfnY/eV4YFlr6mMBi+5e04px9ydzbUH6tTryk/vQN8YMBDNAEClJ/AAJxIXPKHTv2YMfghg45Dcuoxzu3iiN/cqCzE++Jnz7pqIKZcTY/xBFIeiTb4Xnv2JxNMdF/RQ8jaOyKx7XHu8LUCbdvnW9fxIcpKQwfViS/XF2wXPfS/hPwVRohTV0s5Eo7ltcnAjV8Tkh0oN7Nh00Mw14En/81vjF4hst8La4+8="
-
+    secure: UJYgyQPJNbQv7zHaRv9UzcUPVmRKjhJMSJ1qQdMXUR7BSX6FZUxIl7pa9WaWM5yaVl2V1N+GqDCnT2wuH2teCN8xUxf1BHKmsQSs1jucPHo+O7wb1ceWmKq13NCPrR6+unht1p0KowWFTRZ04SvKeiXLQ3/MEKrqxSf/FpK7PPR3x1d9FBoBuHLpLNs6XIl4rDnAw+rwURhxcq1vde2Z18rR6v7opCp//+DWlf92N6rt+mcB3u+fo8JO2/Zuix5j9bMG/6DwBFSwCjcpgYyWqXM41bSrXoUpW1RXuM7VsaOZiPcN9/jybsZ9zwflRBenLp5MbGFWvEFqFBMl5/YkD58SsKhsY4vVp6W+GLNDgcpUzy6TfqJ+j1h+AfhV1zEnvSn1MiCPDKaQm60lcCyJNpp4+B/N3ReenhptToIxaI1/uW6EcViLDS2xzL5+e5soZv33BydL7fVK/1jLJYn0uODuOSTgQpVck20fJDEaF5f7kMi+Gi1dw/svRmEDuhnGLfybwQikCLV2P2jVvrLCYn8sL/aE0kshkyl/L5o16VMguTq8Yi/Tq3FIH75gASKPHimeoRwu6KZnAxivszw2OPmf7+m93/3Qx3UvFzi/65nJM4u1Zf3+qdFktldmEybGhwwKR+u9YK4Zd2vgwBNm6djkcGyuv9SW1/mYHDEld6Q=
