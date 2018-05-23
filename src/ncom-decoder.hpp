@@ -24,6 +24,13 @@
 #include <utility>
 
 class NCOMDecoder {
+   public:
+    class NCOMMessages {
+       public:
+        opendlv::proxy::GeodeticWgs84Reading position{};
+        opendlv::proxy::GeodeticHeadingReading heading{};
+    };
+
    private:
     NCOMDecoder(const NCOMDecoder &) = delete;
     NCOMDecoder(NCOMDecoder &&)      = delete;
@@ -35,7 +42,7 @@ class NCOMDecoder {
     ~NCOMDecoder() = default;
 
    public:
-    std::pair<bool, std::pair<opendlv::proxy::GeodeticWgs84Reading, opendlv::proxy::GeodeticHeadingReading> > decode(const std::string &data) noexcept;
+    std::pair<bool, NCOMMessages> decode(const std::string &data) noexcept;
 };
 
 #endif

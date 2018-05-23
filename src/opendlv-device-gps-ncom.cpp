@@ -53,10 +53,10 @@ int32_t main(int32_t argc, char **argv) {
             if (retVal.first) {
                 cluon::data::TimeStamp sampleTime = cluon::time::convert(tp);
 
-                opendlv::proxy::GeodeticWgs84Reading msg1 = retVal.second.first;
+                opendlv::proxy::GeodeticWgs84Reading msg1 = retVal.second.position;
                 od4Session.send(msg1, sampleTime, senderStamp);
 
-                opendlv::proxy::GeodeticHeadingReading msg2 = retVal.second.second;
+                opendlv::proxy::GeodeticHeadingReading msg2 = retVal.second.heading;
                 od4Session.send(msg2, sampleTime, senderStamp);
 
                 // Print values on console.

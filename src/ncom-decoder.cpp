@@ -24,10 +24,9 @@
 #include <sstream>
 #include <string>
 
-std::pair<bool, std::pair<opendlv::proxy::GeodeticWgs84Reading, opendlv::proxy::GeodeticHeadingReading> > NCOMDecoder::decode(const std::string &data) noexcept {
+std::pair<bool, NCOMDecoder::NCOMMessages> NCOMDecoder::decode(const std::string &data) noexcept {
     bool retVal{false};
-    opendlv::proxy::GeodeticWgs84Reading gps;
-    opendlv::proxy::GeodeticHeadingReading heading;
+    NCOMDecoder::NCOMMessages msg;
 
     constexpr std::size_t NCOM_PACKET_LENGTH{72};
     constexpr uint8_t NCOM_FIRST_BYTE{0xE7};
@@ -45,7 +44,7 @@ std::pair<bool, std::pair<opendlv::proxy::GeodeticWgs84Reading, opendlv::proxy::
             buffer.read(reinterpret_cast<char*>(&latitude), sizeof(double));
             buffer.read(reinterpret_cast<char*>(&longitude), sizeof(double));
 
-            gps.latitude(latitude / M_PI * 180.0).longitude(longitude / M_PI * 180.0);
+            msg.position.latitude(latitude / M_PI * 180.0).longitude(longitude / M_PI * 180.0);
         }
 
         // Decode heading.
@@ -72,10 +71,10 @@ std::pair<bool, std::pair<opendlv::proxy::GeodeticWgs84Reading, opendlv::proxy::
                 northHeading -= 2.0f * static_cast<float>(M_PI);
             }
 
-            heading.northHeading(northHeading);
+            msg.heading.northHeading(northHeading);
         }
         retVal = true;
     }
-    return std::make_pair(retVal, std::make_pair(gps, heading));
+    return std::make_pair(retVal, msg);
 }
 

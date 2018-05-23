@@ -65,8 +65,8 @@ TEST_CASE("Test NCOMDecoder with sample payload.") {
     REQUIRE(retVal.first);
 
     auto msgs = retVal.second;
-    opendlv::proxy::GeodeticWgs84Reading msg1 = msgs.first;
-    opendlv::proxy::GeodeticHeadingReading msg2 = msgs.second;
+    opendlv::proxy::GeodeticWgs84Reading msg1 = msgs.position;
+    opendlv::proxy::GeodeticHeadingReading msg2 = msgs.heading;
 
     REQUIRE(58.037722605 == Approx(msg1.latitude()));
     REQUIRE(12.796579564 == Approx(msg1.longitude()));
