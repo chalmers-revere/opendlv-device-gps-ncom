@@ -59,6 +59,9 @@ int32_t main(int32_t argc, char **argv) {
                 opendlv::proxy::GeodeticHeadingReading msg2 = retVal.second.heading;
                 od4Session.send(msg2, sampleTime, senderStamp);
 
+                opendlv::proxy::GroundSpeedReading msg3 = retVal.second.speed;
+                od4Session.send(msg3, sampleTime, senderStamp);
+
                 // Print values on console.
                 if (VERBOSE) {
                     std::stringstream buffer;
@@ -72,6 +75,12 @@ int32_t main(int32_t argc, char **argv) {
                                [&buffer2](uint32_t, std::string &&, std::string &&n, auto v) { buffer2 << n << " = " << v << '\n'; },
                                []() {});
                     std::cout << buffer2.str() << std::endl;
+
+                    std::stringstream buffer3;
+                    msg3.accept([](uint32_t, const std::string &, const std::string &) {},
+                               [&buffer2](uint32_t, std::string &&, std::string &&n, auto v) { buffer2 << n << " = " << v << '\n'; },
+                               []() {});
+                    std::cout << buffer3.str() << std::endl;
                 }
             }
         });

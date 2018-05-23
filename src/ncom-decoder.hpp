@@ -29,6 +29,7 @@ class NCOMDecoder {
        public:
         opendlv::proxy::GeodeticWgs84Reading position{};
         opendlv::proxy::GeodeticHeadingReading heading{};
+        opendlv::proxy::GroundSpeedReading speed{};
     };
 
    private:
