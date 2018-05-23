@@ -73,6 +73,51 @@ std::pair<bool, NCOMDecoder::NCOMMessages> NCOMDecoder::decode(const std::string
 
             msg.heading.northHeading(northHeading);
         }
+
+        // Decode velocity
+        {
+            float northVelocity{0.0f};
+            float eastVelocity{0.0f};
+            float downVelocity{0.0f};
+
+            std::array<char, 4> tmp{0, 0, 0, 0};
+            uint32_t value{0};
+            {
+                // Move to where north velocity is encoded.
+                constexpr uint32_t START_OF_NORTH_VELOCITY{43};
+                buffer.seekg(START_OF_NORTH_VELOCITY);
+
+                // Extract only three bytes from NCOM.
+                buffer.read(tmp.data(), 3);
+                std::memcpy(&value, tmp.data(), 4);
+                value = le32toh(value);
+                northVelocity = value * 1e-4f;
+            }
+            {
+                // Move to where east velocity is encoded.
+                constexpr uint32_t START_OF_EAST_VELOCITY{46};
+                buffer.seekg(START_OF_EAST_VELOCITY);
+
+                // Extract only three bytes from NCOM.
+                buffer.read(tmp.data(), 3);
+                std::memcpy(&value, tmp.data(), 4);
+                value = le32toh(value);
+                eastVelocity = value * 1e-4f;
+            }
+            {
+                // Move to where down velocity is encoded.
+                constexpr uint32_t START_OF_DOWN_VELOCITY{49};
+                buffer.seekg(START_OF_DOWN_VELOCITY);
+
+                // Extract only three bytes from NCOM.
+                buffer.read(tmp.data(), 3);
+                std::memcpy(&value, tmp.data(), 4);
+                value = le32toh(value);
+                downVelocity = value * -1e-4f;
+            }
+
+            msg.speed.groundSpeed(northVelocity + eastVelocity + downVelocity);
+        }
         retVal = true;
     }
     return std::make_pair(retVal, msg);

@@ -78,7 +78,7 @@ int32_t main(int32_t argc, char **argv) {
 
                     std::stringstream buffer3;
                     msg3.accept([](uint32_t, const std::string &, const std::string &) {},
-                               [&buffer2](uint32_t, std::string &&, std::string &&n, auto v) { buffer2 << n << " = " << v << '\n'; },
+                               [&buffer3](uint32_t, std::string &&, std::string &&n, auto v) { buffer3 << n << " = " << v << '\n'; },
                                []() {});
                     std::cout << buffer3.str() << std::endl;
                 }
