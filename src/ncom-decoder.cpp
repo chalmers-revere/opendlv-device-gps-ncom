@@ -102,7 +102,7 @@ std::pair<bool, NCOMDecoder::NCOMMessages> NCOMDecoder::decode(const std::string
                 buffer.read(tmp.data(), 3);
                 std::memcpy(&value, tmp.data(), 4);
                 value = le32toh(value);
-                eastVelocity = value * 1e-4f;
+                eastVelocity = value * -1e-4f;
             }
             {
                 // Move to where down velocity is encoded.
