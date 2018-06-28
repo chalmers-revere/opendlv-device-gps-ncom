@@ -62,6 +62,9 @@ int32_t main(int32_t argc, char **argv) {
                 opendlv::proxy::GroundSpeedReading msg3 = retVal.second.speed;
                 od4Session.send(msg3, sampleTime, senderStamp);
 
+                opendlv::proxy::AltitudeReading msg4 = retVal.second.altitude;
+                od4Session.send(msg4, sampleTime, senderStamp);
+
                 // Print values on console.
                 if (VERBOSE) {
                     std::stringstream buffer;
@@ -81,6 +84,12 @@ int32_t main(int32_t argc, char **argv) {
                                [&buffer3](uint32_t, std::string &&, std::string &&n, auto v) { buffer3 << n << " = " << v << '\n'; },
                                []() {});
                     std::cout << buffer3.str() << std::endl;
+
+                    std::stringstream buffer4;
+                    msg3.accept([](uint32_t, const std::string &, const std::string &) {},
+                               [&buffer4](uint32_t, std::string &&, std::string &&n, auto v) { buffer4 << n << " = " << v << '\n'; },
+                               []() {});
+                    std::cout << buffer4.str() << std::endl;
                 }
             }
         });

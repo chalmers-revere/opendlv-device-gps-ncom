@@ -56,7 +56,7 @@ std::pair<bool, NCOMDecoder::NCOMMessages> NCOMDecoder::decode(const std::string
             buffer.seekg(START_OF_ALT);
             buffer.read(reinterpret_cast<char*>(&altitude), sizeof(float));
 
-            msg.altitude = altitude;
+            msg.altitude.altitude(altitude);
         }
 
         // Decode velocity

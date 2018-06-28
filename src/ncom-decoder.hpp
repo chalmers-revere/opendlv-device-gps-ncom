@@ -30,7 +30,7 @@ class NCOMDecoder {
         opendlv::proxy::GeodeticWgs84Reading position{};
         opendlv::proxy::GeodeticHeadingReading heading{};
         opendlv::proxy::GroundSpeedReading speed{};
-        float altitude{0.0f};
+        opendlv::proxy::AltitudeReading altitude{};
         float pitch{0.0f};
         float roll{0.0f};
     };
