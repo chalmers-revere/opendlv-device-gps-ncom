@@ -75,5 +75,9 @@ TEST_CASE("Test NCOMDecoder with sample payload.") {
     REQUIRE(2.1584727764 == Approx(msg2.northHeading()));
 
     REQUIRE(0.0000999998 == Approx(msg3.groundSpeed()));
+
+    REQUIRE(104.176 == Approx(msgs.altitude));
+    REQUIRE(0.022784 == Approx(msgs.pitch));
+    REQUIRE(-2.1103 == Approx(msgs.roll));
 }
 

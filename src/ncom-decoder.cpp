@@ -47,31 +47,16 @@ std::pair<bool, NCOMDecoder::NCOMMessages> NCOMDecoder::decode(const std::string
             msg.position.latitude(latitude / M_PI * 180.0).longitude(longitude / M_PI * 180.0);
         }
 
-        // Decode heading.
+        // Decode altitude.
         {
-            float northHeading{0.0f};
+            float altitude{0.0f};
 
-            // Move to where heading is encoded.
-            constexpr uint32_t START_OF_HEADING{52};
-            buffer.seekg(START_OF_HEADING);
+            // Move to where altitude is encoded.
+            constexpr uint32_t START_OF_ALT{39};
+            buffer.seekg(START_OF_ALT);
+            buffer.read(reinterpret_cast<char*>(&altitude), sizeof(float));
 
-            // Extract only three bytes from NCOM.
-            std::array<char, 4> tmp{0, 0, 0, 0};
-            buffer.read(tmp.data(), 3);
-            uint32_t value{0};
-            std::memcpy(&value, tmp.data(), 4);
-            value = le32toh(value);
-            northHeading = value * 1e-6f;
-
-            // Normalize between -M_PI .. M_PI.
-            while (northHeading < -M_PI) {
-                northHeading += 2.0f * static_cast<float>(M_PI);
-            }
-            while (northHeading > M_PI) {
-                northHeading -= 2.0f * static_cast<float>(M_PI);
-            }
-
-            msg.heading.northHeading(northHeading);
+            msg.altitude = altitude;
         }
 
         // Decode velocity
@@ -118,6 +103,88 @@ std::pair<bool, NCOMDecoder::NCOMMessages> NCOMDecoder::decode(const std::string
 
             msg.speed.groundSpeed(northVelocity + eastVelocity + downVelocity);
         }
+
+        // Decode heading.
+        {
+            float heading{0.0f};
+
+            // Move to where heading is encoded.
+            constexpr uint32_t START_OF_HEADING{52};
+            buffer.seekg(START_OF_HEADING);
+
+            // Extract only three bytes from NCOM.
+            std::array<char, 4> tmp{0, 0, 0, 0};
+            buffer.read(tmp.data(), 3);
+            uint32_t value{0};
+            std::memcpy(&value, tmp.data(), 4);
+            value = le32toh(value);
+            heading = value * 1e-6f;
+
+            // Normalize between -M_PI .. M_PI.
+            while (heading < -M_PI) {
+                heading += 2.0f * static_cast<float>(M_PI);
+            }
+            while (heading > M_PI) {
+                heading -= 2.0f * static_cast<float>(M_PI);
+            }
+
+            msg.heading.northHeading(heading);
+        }
+
+        // Decode pitch.
+        {
+            float pitch{0.0f};
+
+            // Move to where pitch is encoded.
+            constexpr uint32_t START_OF_PITCH{55};
+            buffer.seekg(START_OF_PITCH);
+
+            // Extract only three bytes from NCOM.
+            std::array<char, 4> tmp{0, 0, 0, 0};
+            buffer.read(tmp.data(), 3);
+            uint32_t value{0};
+            std::memcpy(&value, tmp.data(), 4);
+            value = le32toh(value);
+            pitch = value * 1e-6f;
+
+            // Normalize between -M_PI/2.0 .. M_PI/2.0.
+            while (pitch < -static_cast<float>(M_PI)/2.0f) {
+                pitch += static_cast<float>(M_PI);
+            }
+            while (pitch > static_cast<float>(M_PI)/2.0f) {
+                pitch -= static_cast<float>(M_PI);
+            }
+
+            msg.pitch = pitch;
+        }
+
+        // Decode roll.
+        {
+            float roll{0.0f};
+
+            // Move to where roll is encoded.
+            constexpr uint32_t START_OF_ROLL{58};
+            buffer.seekg(START_OF_ROLL);
+
+            // Extract only three bytes from NCOM.
+            std::array<char, 4> tmp{0, 0, 0, 0};
+            buffer.read(tmp.data(), 3);
+            uint32_t value{0};
+            std::memcpy(&value, tmp.data(), 4);
+            value = le32toh(value);
+            roll = value * 1e-6f;
+
+            // Normalize between -M_PI .. M_PI.
+            while (roll < -M_PI) {
+                roll += 2.0f * static_cast<float>(M_PI);
+            }
+            while (roll > M_PI) {
+                roll -= 2.0f * static_cast<float>(M_PI);
+            }
+
+            msg.roll = roll;
+        }
+
         retVal = true;
     }
     return std::make_pair(retVal, msg);
