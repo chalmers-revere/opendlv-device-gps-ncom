@@ -65,6 +65,9 @@ int32_t main(int32_t argc, char **argv) {
                 opendlv::proxy::AltitudeReading msg4 = retVal.second.altitude;
                 od4Session.send(msg4, sampleTime, senderStamp);
 
+                opendlv::logic::sensation::Geolocation msg5 = retVal.second.geolocation;
+                od4Session.send(msg5, sampleTime, senderStamp);
+
                 // Print values on console.
                 if (VERBOSE) {
                     std::stringstream buffer;
@@ -86,10 +89,16 @@ int32_t main(int32_t argc, char **argv) {
                     std::cout << buffer3.str() << std::endl;
 
                     std::stringstream buffer4;
-                    msg3.accept([](uint32_t, const std::string &, const std::string &) {},
+                    msg4.accept([](uint32_t, const std::string &, const std::string &) {},
                                [&buffer4](uint32_t, std::string &&, std::string &&n, auto v) { buffer4 << n << " = " << v << '\n'; },
                                []() {});
                     std::cout << buffer4.str() << std::endl;
+
+                    std::stringstream buffer5;
+                    msg5.accept([](uint32_t, const std::string &, const std::string &) {},
+                               [&buffer5](uint32_t, std::string &&, std::string &&n, auto v) { buffer5 << n << " = " << v << '\n'; },
+                               []() {});
+                    std::cout << buffer5.str() << std::endl;
                 }
             }
         });

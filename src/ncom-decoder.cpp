@@ -45,6 +45,10 @@ std::pair<bool, NCOMDecoder::NCOMMessages> NCOMDecoder::decode(const std::string
             buffer.read(reinterpret_cast<char*>(&longitude), sizeof(double));
 
             msg.position.latitude(latitude / M_PI * 180.0).longitude(longitude / M_PI * 180.0);
+
+            // Update Geolocation.
+            msg.geolocation.latitude(msg.position.latitude());
+            msg.geolocation.longitude(msg.position.longitude());
         }
 
         // Decode altitude.
@@ -57,6 +61,9 @@ std::pair<bool, NCOMDecoder::NCOMMessages> NCOMDecoder::decode(const std::string
             buffer.read(reinterpret_cast<char*>(&altitude), sizeof(float));
 
             msg.altitude.altitude(altitude);
+
+            // Update Geolocation.
+            msg.geolocation.altitude(msg.altitude.altitude());
         }
 
         // Decode velocity
@@ -129,6 +136,9 @@ std::pair<bool, NCOMDecoder::NCOMMessages> NCOMDecoder::decode(const std::string
             }
 
             msg.heading.northHeading(heading);
+
+            // Update Geolocation.
+            msg.geolocation.heading(msg.heading.northHeading());
         }
 
         // Decode pitch.
