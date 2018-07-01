@@ -73,13 +73,13 @@ TEST_CASE("Test NCOMDecoder with sample payload.") {
     opendlv::proxy::AltitudeReading msg6 = msgs.altitude;
     opendlv::logic::sensation::Geolocation msg7 = msgs.geolocation;
 
-    REQUIRE(0 == Approx(msg1.accelerationX()));
-    REQUIRE(0 == Approx(msg1.accelerationY()));
-    REQUIRE(0 == Approx(msg1.accelerationZ()));
+    REQUIRE(0.2196999937 == Approx(msg1.accelerationX()));
+    REQUIRE(0.3707999885 == Approx(msg1.accelerationY()));
+    REQUIRE(-9.8042001724 == Approx(msg1.accelerationZ()));
 
-    REQUIRE(0 == Approx(msg2.angularVelocityX()));
-    REQUIRE(0 == Approx(msg2.angularVelocityY()));
-    REQUIRE(0 == Approx(msg2.angularVelocityZ()));
+    REQUIRE(0.00069 == Approx(msg2.angularVelocityX()));
+    REQUIRE(0.00244 == Approx(msg2.angularVelocityY()));
+    REQUIRE(-0.00086 == Approx(msg2.angularVelocityZ()));
 
     REQUIRE(58.037722605 == Approx(msg3.latitude()));
     REQUIRE(12.796579564 == Approx(msg3.longitude()));

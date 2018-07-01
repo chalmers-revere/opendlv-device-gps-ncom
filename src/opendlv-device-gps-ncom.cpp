@@ -52,6 +52,17 @@ int32_t main(int32_t argc, char **argv) {
             auto retVal = decoder.decode(d);
             if (retVal.first) {
                 cluon::data::TimeStamp sampleTime = cluon::time::convert(tp);
+                // Set time stamp from OxTS unit (milliseconds into current GPS
+                // minute assuming that the current computing unit is synced
+                // to GPS time using PTP for example).
+                {
+                    int32_t seconds = sampleTime.seconds();
+                    struct tm *brokenDownSampleTimePtr = gmtime(reinterpret_cast<time_t*>(&seconds));
+                    struct tm brokenDownSampleTime = *brokenDownSampleTimePtr;
+                    brokenDownSampleTime.tm_sec = retVal.second.millisecondsIntoCurrentGPSMinute/1000;
+                    time_t sampleTimeSeconds = mktime(&brokenDownSampleTime);
+                    sampleTime.seconds(sampleTimeSeconds).microseconds((retVal.second.millisecondsIntoCurrentGPSMinute%1000)*1000);
+                }
 
                 opendlv::proxy::AccelerationReading msg1 = retVal.second.acceleration;
                 od4Session.send(msg1, sampleTime, senderStamp);

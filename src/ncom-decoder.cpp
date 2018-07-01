@@ -20,6 +20,7 @@
 
 #include <cmath>
 #include <cstring>
+#include <ctime>
 #include <array>
 #include <sstream>
 #include <string>
@@ -33,6 +34,15 @@ std::pair<bool, NCOMDecoder::NCOMMessages> NCOMDecoder::decode(const std::string
     if ( (NCOM_PACKET_LENGTH == data.size()) && (NCOM_FIRST_BYTE == static_cast<uint8_t>(data.at(0))) ) {
         std::stringstream buffer{data};
 
+        {
+            // Move to where the timestamp is encoded.
+            constexpr uint32_t START_OF_TIMESTAMP{1};
+            buffer.seekg(START_OF_TIMESTAMP);
+
+            buffer.read(reinterpret_cast<char*>(&(msg.millisecondsIntoCurrentGPSMinute)), 2);
+            msg.millisecondsIntoCurrentGPSMinute = le16toh(msg.millisecondsIntoCurrentGPSMinute);
+        }
+
         // Decode acceleration.
         {
             float accelerationX{0.0f};
@@ -40,7 +50,7 @@ std::pair<bool, NCOMDecoder::NCOMMessages> NCOMDecoder::decode(const std::string
             float accelerationZ{0.0f};
 
             std::array<char, 4> tmp{0, 0, 0, 0};
-            uint32_t value{0};
+            int32_t value{0};
             {
                 // Move to where acceleration X is encoded.
                 constexpr uint32_t START_OF_ACCELERATIONX{3};
@@ -49,8 +59,11 @@ std::pair<bool, NCOMDecoder::NCOMMessages> NCOMDecoder::decode(const std::string
                 // Extract only three bytes from NCOM.
                 buffer.read(tmp.data(), 3);
                 std::memcpy(&value, tmp.data(), 4);
-                value = le32toh(value);
-                accelerationX = accelerationX * 1e-4f;
+                value = le32toh(value) & 0xFFFFFF;
+                if ((value & 0x800000) == 0x800000) {
+                    value = -1 * ((~value & 0xFFFFFF) + 1);
+                }
+                accelerationX = value * 1e-4f;
             }
             {
                 // Move to where acceleration Y is encoded.
@@ -60,8 +73,11 @@ std::pair<bool, NCOMDecoder::NCOMMessages> NCOMDecoder::decode(const std::string
                 // Extract only three bytes from NCOM.
                 buffer.read(tmp.data(), 3);
                 std::memcpy(&value, tmp.data(), 4);
-                value = le32toh(value);
-                accelerationY = accelerationY * 1e-4f;
+                value = le32toh(value) & 0xFFFFFF;
+                if ((value & 0x800000) == 0x800000) {
+                    value = -1 * ((~value & 0xFFFFFF) + 1);
+                }
+                accelerationY = value * 1e-4f;
             }
             {
                 // Move to where acceleration Z is encoded.
@@ -71,8 +87,11 @@ std::pair<bool, NCOMDecoder::NCOMMessages> NCOMDecoder::decode(const std::string
                 // Extract only three bytes from NCOM.
                 buffer.read(tmp.data(), 3);
                 std::memcpy(&value, tmp.data(), 4);
-                value = le32toh(value);
-                accelerationZ = accelerationZ * 1e-4f;
+                value = le32toh(value) & 0xFFFFFF;
+                if ((value & 0x800000) == 0x800000) {
+                    value = -1 * ((~value & 0xFFFFFF) + 1);
+                }
+                accelerationZ = value * 1e-4f;
             }
 
             msg.acceleration.accelerationX(accelerationX)
@@ -87,7 +106,7 @@ std::pair<bool, NCOMDecoder::NCOMMessages> NCOMDecoder::decode(const std::string
             float angularRateZ{0.0f};
 
             std::array<char, 4> tmp{0, 0, 0, 0};
-            uint32_t value{0};
+            int32_t value{0};
             {
                 // Move to where angular rate X is encoded.
                 constexpr uint32_t START_OF_ANGULARRATEX{12};
@@ -96,8 +115,11 @@ std::pair<bool, NCOMDecoder::NCOMMessages> NCOMDecoder::decode(const std::string
                 // Extract only three bytes from NCOM.
                 buffer.read(tmp.data(), 3);
                 std::memcpy(&value, tmp.data(), 4);
-                value = le32toh(value);
-                angularRateX = angularRateX * 1e-5f;
+                value = le32toh(value) & 0xFFFFFF;
+                if ((value & 0x800000) == 0x800000) {
+                    value = -1 * ((~value & 0xFFFFFF) + 1);
+                }
+                angularRateX = value * 1e-5f;
             }
             {
                 // Move to where angular rate Y is encoded.
@@ -107,8 +129,11 @@ std::pair<bool, NCOMDecoder::NCOMMessages> NCOMDecoder::decode(const std::string
                 // Extract only three bytes from NCOM.
                 buffer.read(tmp.data(), 3);
                 std::memcpy(&value, tmp.data(), 4);
-                value = le32toh(value);
-                angularRateY = angularRateY * 1e-5f;
+                value = le32toh(value) & 0xFFFFFF;
+                if ((value & 0x800000) == 0x800000) {
+                    value = -1 * ((~value & 0xFFFFFF) + 1);
+                }
+                angularRateY = value * 1e-5f;
             }
             {
                 // Move to where angular rate Z is encoded.
@@ -118,8 +143,11 @@ std::pair<bool, NCOMDecoder::NCOMMessages> NCOMDecoder::decode(const std::string
                 // Extract only three bytes from NCOM.
                 buffer.read(tmp.data(), 3);
                 std::memcpy(&value, tmp.data(), 4);
-                value = le32toh(value);
-                angularRateZ = angularRateZ * 1e-5f;
+                value = le32toh(value) & 0xFFFFFF;
+                if ((value & 0x800000) == 0x800000) {
+                    value = -1 * ((~value & 0xFFFFFF) + 1);
+                }
+                angularRateZ = value * 1e-5f;
             }
 
             msg.angularVelocity.angularVelocityX(angularRateX)
@@ -167,7 +195,7 @@ std::pair<bool, NCOMDecoder::NCOMMessages> NCOMDecoder::decode(const std::string
             float downVelocity{0.0f};
 
             std::array<char, 4> tmp{0, 0, 0, 0};
-            uint32_t value{0};
+            int32_t value{0};
             {
                 // Move to where north velocity is encoded.
                 constexpr uint32_t START_OF_NORTH_VELOCITY{43};
@@ -176,7 +204,10 @@ std::pair<bool, NCOMDecoder::NCOMMessages> NCOMDecoder::decode(const std::string
                 // Extract only three bytes from NCOM.
                 buffer.read(tmp.data(), 3);
                 std::memcpy(&value, tmp.data(), 4);
-                value = le32toh(value);
+                value = le32toh(value) & 0xFFFFFF;
+                if ((value & 0x800000) == 0x800000) {
+                    value = -1 * ((~value & 0xFFFFFF) + 1);
+                }
                 northVelocity = value * 1e-4f;
             }
             {
@@ -187,7 +218,10 @@ std::pair<bool, NCOMDecoder::NCOMMessages> NCOMDecoder::decode(const std::string
                 // Extract only three bytes from NCOM.
                 buffer.read(tmp.data(), 3);
                 std::memcpy(&value, tmp.data(), 4);
-                value = le32toh(value);
+                value = le32toh(value) & 0xFFFFFF;
+                if ((value & 0x800000) == 0x800000) {
+                    value = -1 * ((~value & 0xFFFFFF) + 1);
+                }
                 eastVelocity = value * -1e-4f;
             }
             {
@@ -198,7 +232,10 @@ std::pair<bool, NCOMDecoder::NCOMMessages> NCOMDecoder::decode(const std::string
                 // Extract only three bytes from NCOM.
                 buffer.read(tmp.data(), 3);
                 std::memcpy(&value, tmp.data(), 4);
-                value = le32toh(value);
+                value = le32toh(value) & 0xFFFFFF;
+                if ((value & 0x800000) == 0x800000) {
+                    value = -1 * ((~value & 0xFFFFFF) + 1);
+                }
                 downVelocity = value * -1e-4f;
             }
 

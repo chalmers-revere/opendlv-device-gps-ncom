@@ -27,6 +27,7 @@ class NCOMDecoder {
    public:
     class NCOMMessages {
        public:
+        uint16_t millisecondsIntoCurrentGPSMinute{0};
         opendlv::proxy::AccelerationReading acceleration{};
         opendlv::proxy::AngularVelocityReading angularVelocity{};
         opendlv::proxy::GeodeticWgs84Reading position{};
