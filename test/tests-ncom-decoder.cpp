@@ -65,27 +65,38 @@ TEST_CASE("Test NCOMDecoder with sample payload.") {
     REQUIRE(retVal.first);
 
     auto msgs = retVal.second;
-    opendlv::proxy::GeodeticWgs84Reading msg1 = msgs.position;
-    opendlv::proxy::GeodeticHeadingReading msg2 = msgs.heading;
-    opendlv::proxy::GroundSpeedReading msg3 = msgs.speed;
-    opendlv::proxy::AltitudeReading msg4 = msgs.altitude;
-    opendlv::logic::sensation::Geolocation msg5 = msgs.geolocation;
+    opendlv::proxy::AccelerationReading msg1 = msgs.acceleration;
+    opendlv::proxy::GeodeticWgs84Reading msg3 = msgs.position;
+    opendlv::proxy::GeodeticHeadingReading msg4 = msgs.heading;
+    opendlv::proxy::GroundSpeedReading msg5 = msgs.speed;
+    opendlv::proxy::AltitudeReading msg6 = msgs.altitude;
+    opendlv::logic::sensation::Geolocation msg7 = msgs.geolocation;
 
-    REQUIRE(58.037722605 == Approx(msg1.latitude()));
-    REQUIRE(12.796579564 == Approx(msg1.longitude()));
+    std::stringstream buffer;
+    msg1.accept([](uint32_t, const std::string &, const std::string &) {},
+               [&buffer](uint32_t, std::string &&, std::string &&n, auto v) { buffer << n << " = " << v << '\n'; },
+               []() {});
+    std::cout << buffer.str() << std::endl;
 
-    REQUIRE(2.1584727764 == Approx(msg2.northHeading()));
+    REQUIRE(0 == Approx(msg1.accelerationX()));
+    REQUIRE(0 == Approx(msg1.accelerationY()));
+    REQUIRE(0 == Approx(msg1.accelerationZ()));
 
-    REQUIRE(0.0000999998 == Approx(msg3.groundSpeed()));
+    REQUIRE(58.037722605 == Approx(msg3.latitude()));
+    REQUIRE(12.796579564 == Approx(msg3.longitude()));
 
-    REQUIRE(104.176 == Approx(msg4.altitude()));
+    REQUIRE(2.1584727764 == Approx(msg4.northHeading()));
+
+    REQUIRE(0.0000999998 == Approx(msg5.groundSpeed()));
+
+    REQUIRE(104.176 == Approx(msg6.altitude()));
 
     REQUIRE(0.022784 == Approx(msgs.pitch));
     REQUIRE(-2.1103 == Approx(msgs.roll));
 
-    REQUIRE(msg5.latitude() == Approx(msg1.latitude()));
-    REQUIRE(msg5.longitude() == Approx(msg1.longitude()));
-    REQUIRE(msg5.heading() == Approx(msg2.northHeading()));
-    REQUIRE(msg5.altitude() == Approx(msg4.altitude()));
+    REQUIRE(msg7.latitude() == Approx(msg3.latitude()));
+    REQUIRE(msg7.longitude() == Approx(msg3.longitude()));
+    REQUIRE(msg7.heading() == Approx(msg4.northHeading()));
+    REQUIRE(msg7.altitude() == Approx(msg6.altitude()));
 }
 

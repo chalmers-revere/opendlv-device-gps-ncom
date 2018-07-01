@@ -27,6 +27,8 @@ class NCOMDecoder {
    public:
     class NCOMMessages {
        public:
+        opendlv::proxy::AccelerationReading acceleration{};
+        opendlv::proxy::AngularVelocityReading angularVelocity{};
         opendlv::proxy::GeodeticWgs84Reading position{};
         opendlv::proxy::GeodeticHeadingReading heading{};
         opendlv::proxy::GroundSpeedReading speed{};

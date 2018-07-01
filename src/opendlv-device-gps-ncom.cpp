@@ -53,52 +53,75 @@ int32_t main(int32_t argc, char **argv) {
             if (retVal.first) {
                 cluon::data::TimeStamp sampleTime = cluon::time::convert(tp);
 
-                opendlv::proxy::GeodeticWgs84Reading msg1 = retVal.second.position;
+                opendlv::proxy::AccelerationReading msg1 = retVal.second.acceleration;
                 od4Session.send(msg1, sampleTime, senderStamp);
 
-                opendlv::proxy::GeodeticHeadingReading msg2 = retVal.second.heading;
-                od4Session.send(msg2, sampleTime, senderStamp);
-
-                opendlv::proxy::GroundSpeedReading msg3 = retVal.second.speed;
+                opendlv::proxy::GeodeticWgs84Reading msg3 = retVal.second.position;
                 od4Session.send(msg3, sampleTime, senderStamp);
 
-                opendlv::proxy::AltitudeReading msg4 = retVal.second.altitude;
+                opendlv::proxy::GeodeticHeadingReading msg4 = retVal.second.heading;
                 od4Session.send(msg4, sampleTime, senderStamp);
 
-                opendlv::logic::sensation::Geolocation msg5 = retVal.second.geolocation;
+                opendlv::proxy::GroundSpeedReading msg5 = retVal.second.speed;
                 od4Session.send(msg5, sampleTime, senderStamp);
+
+                opendlv::proxy::AltitudeReading msg6 = retVal.second.altitude;
+                od4Session.send(msg6, sampleTime, senderStamp);
+
+                opendlv::logic::sensation::Geolocation msg7 = retVal.second.geolocation;
+                od4Session.send(msg7, sampleTime, senderStamp);
 
                 // Print values on console.
                 if (VERBOSE) {
-                    std::stringstream buffer;
-                    msg1.accept([](uint32_t, const std::string &, const std::string &) {},
-                               [&buffer](uint32_t, std::string &&, std::string &&n, auto v) { buffer << n << " = " << v << '\n'; },
-                               []() {});
-                    std::cout << buffer.str() << std::endl;
-
-                    std::stringstream buffer2;
-                    msg2.accept([](uint32_t, const std::string &, const std::string &) {},
-                               [&buffer2](uint32_t, std::string &&, std::string &&n, auto v) { buffer2 << n << " = " << v << '\n'; },
-                               []() {});
-                    std::cout << buffer2.str() << std::endl;
-
-                    std::stringstream buffer3;
-                    msg3.accept([](uint32_t, const std::string &, const std::string &) {},
-                               [&buffer3](uint32_t, std::string &&, std::string &&n, auto v) { buffer3 << n << " = " << v << '\n'; },
-                               []() {});
-                    std::cout << buffer3.str() << std::endl;
-
-                    std::stringstream buffer4;
-                    msg4.accept([](uint32_t, const std::string &, const std::string &) {},
-                               [&buffer4](uint32_t, std::string &&, std::string &&n, auto v) { buffer4 << n << " = " << v << '\n'; },
-                               []() {});
-                    std::cout << buffer4.str() << std::endl;
-
-                    std::stringstream buffer5;
-                    msg5.accept([](uint32_t, const std::string &, const std::string &) {},
-                               [&buffer5](uint32_t, std::string &&, std::string &&n, auto v) { buffer5 << n << " = " << v << '\n'; },
-                               []() {});
-                    std::cout << buffer5.str() << std::endl;
+                    {
+                        std::stringstream buffer;
+                        msg1.accept([](uint32_t, const std::string &, const std::string &) {},
+                                   [&buffer](uint32_t, std::string &&, std::string &&n, auto v) { buffer << n << " = " << v << '\n'; },
+                                   []() {});
+                        std::cout << buffer.str() << std::endl;
+                    }
+                    {
+                        std::stringstream buffer;
+                        msg3.accept([](uint32_t, const std::string &, const std::string &) {},
+                                   [&buffer](uint32_t, std::string &&, std::string &&n, auto v) { buffer << n << " = " << v << '\n'; },
+                                   []() {});
+                        std::cout << buffer.str() << std::endl;
+                    }
+                    {
+                        std::stringstream buffer;
+                        msg3.accept([](uint32_t, const std::string &, const std::string &) {},
+                                   [&buffer](uint32_t, std::string &&, std::string &&n, auto v) { buffer << n << " = " << v << '\n'; },
+                                   []() {});
+                        std::cout << buffer.str() << std::endl;
+                    }
+                    {
+                        std::stringstream buffer;
+                        msg4.accept([](uint32_t, const std::string &, const std::string &) {},
+                                   [&buffer](uint32_t, std::string &&, std::string &&n, auto v) { buffer << n << " = " << v << '\n'; },
+                                   []() {});
+                        std::cout << buffer.str() << std::endl;
+                    }
+                    {
+                        std::stringstream buffer;
+                        msg5.accept([](uint32_t, const std::string &, const std::string &) {},
+                                   [&buffer](uint32_t, std::string &&, std::string &&n, auto v) { buffer << n << " = " << v << '\n'; },
+                                   []() {});
+                        std::cout << buffer.str() << std::endl;
+                    }
+                    {
+                        std::stringstream buffer;
+                        msg6.accept([](uint32_t, const std::string &, const std::string &) {},
+                                   [&buffer](uint32_t, std::string &&, std::string &&n, auto v) { buffer << n << " = " << v << '\n'; },
+                                   []() {});
+                        std::cout << buffer.str() << std::endl;
+                    }
+                    {
+                        std::stringstream buffer;
+                        msg7.accept([](uint32_t, const std::string &, const std::string &) {},
+                                   [&buffer](uint32_t, std::string &&, std::string &&n, auto v) { buffer << n << " = " << v << '\n'; },
+                                   []() {});
+                        std::cout << buffer.str() << std::endl;
+                    }
                 }
             }
         });

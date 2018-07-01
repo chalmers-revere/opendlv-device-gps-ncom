@@ -33,6 +33,53 @@ std::pair<bool, NCOMDecoder::NCOMMessages> NCOMDecoder::decode(const std::string
     if ( (NCOM_PACKET_LENGTH == data.size()) && (NCOM_FIRST_BYTE == static_cast<uint8_t>(data.at(0))) ) {
         std::stringstream buffer{data};
 
+        // Decode acceleration.
+        {
+            float accelerationX{0.0f};
+            float accelerationY{0.0f};
+            float accelerationZ{0.0f};
+
+            std::array<char, 4> tmp{0, 0, 0, 0};
+            uint32_t value{0};
+            {
+                // Move to where acceleration X is encoded.
+                constexpr uint32_t START_OF_ACCELERATIONX{3};
+                buffer.seekg(START_OF_ACCELERATIONX);
+
+                // Extract only three bytes from NCOM.
+                buffer.read(tmp.data(), 3);
+                std::memcpy(&value, tmp.data(), 4);
+                value = le32toh(value);
+                accelerationX = accelerationX * 1e-4f;
+            }
+            {
+                // Move to where acceleration Y is encoded.
+                constexpr uint32_t START_OF_ACCELERATIONY{6};
+                buffer.seekg(START_OF_ACCELERATIONY);
+
+                // Extract only three bytes from NCOM.
+                buffer.read(tmp.data(), 3);
+                std::memcpy(&value, tmp.data(), 4);
+                value = le32toh(value);
+                accelerationY = accelerationY * 1e-4f;
+            }
+            {
+                // Move to where acceleration Z is encoded.
+                constexpr uint32_t START_OF_ACCELERATIONZ{9};
+                buffer.seekg(START_OF_ACCELERATIONZ);
+
+                // Extract only three bytes from NCOM.
+                buffer.read(tmp.data(), 3);
+                std::memcpy(&value, tmp.data(), 4);
+                value = le32toh(value);
+                accelerationZ = accelerationZ * 1e-4f;
+            }
+
+            msg.acceleration.accelerationX(accelerationX)
+                            .accelerationY(accelerationY)
+                            .accelerationZ(accelerationZ);
+        }
+
         // Decode latitude/longitude.
         {
             double latitude{0.0};
