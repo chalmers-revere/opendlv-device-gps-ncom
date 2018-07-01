@@ -66,21 +66,20 @@ TEST_CASE("Test NCOMDecoder with sample payload.") {
 
     auto msgs = retVal.second;
     opendlv::proxy::AccelerationReading msg1 = msgs.acceleration;
+    opendlv::proxy::AngularVelocityReading msg2 = msgs.angularVelocity;
     opendlv::proxy::GeodeticWgs84Reading msg3 = msgs.position;
     opendlv::proxy::GeodeticHeadingReading msg4 = msgs.heading;
     opendlv::proxy::GroundSpeedReading msg5 = msgs.speed;
     opendlv::proxy::AltitudeReading msg6 = msgs.altitude;
     opendlv::logic::sensation::Geolocation msg7 = msgs.geolocation;
 
-    std::stringstream buffer;
-    msg1.accept([](uint32_t, const std::string &, const std::string &) {},
-               [&buffer](uint32_t, std::string &&, std::string &&n, auto v) { buffer << n << " = " << v << '\n'; },
-               []() {});
-    std::cout << buffer.str() << std::endl;
-
     REQUIRE(0 == Approx(msg1.accelerationX()));
     REQUIRE(0 == Approx(msg1.accelerationY()));
     REQUIRE(0 == Approx(msg1.accelerationZ()));
+
+    REQUIRE(0 == Approx(msg2.angularVelocityX()));
+    REQUIRE(0 == Approx(msg2.angularVelocityY()));
+    REQUIRE(0 == Approx(msg2.angularVelocityZ()));
 
     REQUIRE(58.037722605 == Approx(msg3.latitude()));
     REQUIRE(12.796579564 == Approx(msg3.longitude()));

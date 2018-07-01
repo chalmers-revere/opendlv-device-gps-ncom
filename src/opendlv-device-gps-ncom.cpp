@@ -56,6 +56,9 @@ int32_t main(int32_t argc, char **argv) {
                 opendlv::proxy::AccelerationReading msg1 = retVal.second.acceleration;
                 od4Session.send(msg1, sampleTime, senderStamp);
 
+                opendlv::proxy::AngularVelocityReading msg2 = retVal.second.angularVelocity;
+                od4Session.send(msg2, sampleTime, senderStamp);
+
                 opendlv::proxy::GeodeticWgs84Reading msg3 = retVal.second.position;
                 od4Session.send(msg3, sampleTime, senderStamp);
 
@@ -76,6 +79,13 @@ int32_t main(int32_t argc, char **argv) {
                     {
                         std::stringstream buffer;
                         msg1.accept([](uint32_t, const std::string &, const std::string &) {},
+                                   [&buffer](uint32_t, std::string &&, std::string &&n, auto v) { buffer << n << " = " << v << '\n'; },
+                                   []() {});
+                        std::cout << buffer.str() << std::endl;
+                    }
+                    {
+                        std::stringstream buffer;
+                        msg2.accept([](uint32_t, const std::string &, const std::string &) {},
                                    [&buffer](uint32_t, std::string &&, std::string &&n, auto v) { buffer << n << " = " << v << '\n'; },
                                    []() {});
                         std::cout << buffer.str() << std::endl;

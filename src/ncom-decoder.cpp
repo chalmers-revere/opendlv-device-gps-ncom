@@ -80,6 +80,53 @@ std::pair<bool, NCOMDecoder::NCOMMessages> NCOMDecoder::decode(const std::string
                             .accelerationZ(accelerationZ);
         }
 
+        // Decode angular velocity.
+        {
+            float angularRateX{0.0f};
+            float angularRateY{0.0f};
+            float angularRateZ{0.0f};
+
+            std::array<char, 4> tmp{0, 0, 0, 0};
+            uint32_t value{0};
+            {
+                // Move to where angular rate X is encoded.
+                constexpr uint32_t START_OF_ANGULARRATEX{12};
+                buffer.seekg(START_OF_ANGULARRATEX);
+
+                // Extract only three bytes from NCOM.
+                buffer.read(tmp.data(), 3);
+                std::memcpy(&value, tmp.data(), 4);
+                value = le32toh(value);
+                angularRateX = angularRateX * 1e-5f;
+            }
+            {
+                // Move to where angular rate Y is encoded.
+                constexpr uint32_t START_OF_ANGULARRATEY{15};
+                buffer.seekg(START_OF_ANGULARRATEY);
+
+                // Extract only three bytes from NCOM.
+                buffer.read(tmp.data(), 3);
+                std::memcpy(&value, tmp.data(), 4);
+                value = le32toh(value);
+                angularRateY = angularRateY * 1e-5f;
+            }
+            {
+                // Move to where angular rate Z is encoded.
+                constexpr uint32_t START_OF_ANGULARRATEZ{18};
+                buffer.seekg(START_OF_ANGULARRATEZ);
+
+                // Extract only three bytes from NCOM.
+                buffer.read(tmp.data(), 3);
+                std::memcpy(&value, tmp.data(), 4);
+                value = le32toh(value);
+                angularRateZ = angularRateZ * 1e-5f;
+            }
+
+            msg.angularVelocity.angularVelocityX(angularRateX)
+                               .angularVelocityY(angularRateY)
+                               .angularVelocityZ(angularRateZ);
+        }
+
         // Decode latitude/longitude.
         {
             double latitude{0.0};
