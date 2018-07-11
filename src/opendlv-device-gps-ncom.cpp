@@ -57,8 +57,8 @@ int32_t main(int32_t argc, char **argv) {
                 // to GPS time using PTP for example).
                 {
                     int32_t seconds = sampleTime.seconds();
-                    struct tm *brokenDownSampleTimePtr = gmtime(reinterpret_cast<time_t*>(&seconds));
-                    struct tm brokenDownSampleTime = *brokenDownSampleTimePtr;
+                    struct tm brokenDownSampleTime;
+                    gmtime_r(reinterpret_cast<time_t*>(&seconds), &brokenDownSampleTime);
                     brokenDownSampleTime.tm_sec = retVal.second.millisecondsIntoCurrentGPSMinute/1000;
                     time_t sampleTimeSeconds = mktime(&brokenDownSampleTime);
                     sampleTime.seconds(sampleTimeSeconds).microseconds((retVal.second.millisecondsIntoCurrentGPSMinute%1000)*1000);
@@ -97,13 +97,6 @@ int32_t main(int32_t argc, char **argv) {
                     {
                         std::stringstream buffer;
                         msg2.accept([](uint32_t, const std::string &, const std::string &) {},
-                                   [&buffer](uint32_t, std::string &&, std::string &&n, auto v) { buffer << n << " = " << v << '\n'; },
-                                   []() {});
-                        std::cout << buffer.str() << std::endl;
-                    }
-                    {
-                        std::stringstream buffer;
-                        msg3.accept([](uint32_t, const std::string &, const std::string &) {},
                                    [&buffer](uint32_t, std::string &&, std::string &&n, auto v) { buffer << n << " = " << v << '\n'; },
                                    []() {});
                         std::cout << buffer.str() << std::endl;
