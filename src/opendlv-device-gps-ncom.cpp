@@ -31,12 +31,13 @@ int32_t main(int32_t argc, char **argv) {
     auto commandlineArguments = cluon::getCommandlineArguments(argc, argv);
     if ( (0 == commandlineArguments.count("ncom_port")) || (0 == commandlineArguments.count("cid")) ) {
         std::cerr << argv[0] << " decodes latitude/longitude/heading from an OXTS GPS/INSS unit in NCOM format and publishes it to a running OpenDaVINCI session using the OpenDLV Standard Message Set." << std::endl;
-        std::cerr << "Usage:   " << argv[0] << " [--ncom_ip=<IPv4-address>] --ncom_port=<port> --cid=<OpenDaVINCI session> [--id=<Identifier in case of multiple OxTS units>] [--verbose]" << std::endl;
+        std::cerr << "Usage:   " << argv[0] << " [--ncom_ip=<IPv4-address>] --ncom_port=<port> --cid=<OpenDaVINCI session> [--id=<Identifier in case of multiple OxTS units>] [--nogpstime] [--verbose]" << std::endl;
         std::cerr << "Example: " << argv[0] << " --ncom_ip=0.0.0.0 --ncom_port=3000 --cid=111" << std::endl;
         retCode = 1;
     } else {
         const uint32_t ID{(commandlineArguments["id"].size() != 0) ? static_cast<uint32_t>(std::stoi(commandlineArguments["id"])) : 0};
         const bool VERBOSE{commandlineArguments.count("verbose") != 0};
+        const bool DONT_USE_GPSTIME{commandlineArguments.count("nogpstime") != 0};
 
         // Interface to a running OpenDaVINCI session (ignoring any incoming Envelopes).
         cluon::OD4Session od4{static_cast<uint16_t>(std::stoi(commandlineArguments["cid"])),
@@ -48,20 +49,25 @@ int32_t main(int32_t argc, char **argv) {
         const uint32_t NCOM_PORT(std::stoi(commandlineArguments["ncom_port"]));
         NCOMDecoder ncomDecoder;
         cluon::UDPReceiver fromDevice(NCOM_ADDRESS, NCOM_PORT,
-            [&od4Session = od4, &decoder = ncomDecoder, senderStamp = ID, VERBOSE](std::string &&d, std::string &&/*from*/, std::chrono::system_clock::time_point &&tp) noexcept {
+            [&od4Session = od4, &decoder = ncomDecoder, senderStamp = ID, VERBOSE, DONT_USE_GPSTIME](std::string &&d, std::string &&/*from*/, std::chrono::system_clock::time_point &&tp) noexcept {
             auto retVal = decoder.decode(d);
             if (retVal.first) {
                 cluon::data::TimeStamp sampleTime = cluon::time::convert(tp);
                 // Set time stamp from OxTS unit (milliseconds into current GPS
                 // minute assuming that the current computing unit is synced
                 // to GPS time using PTP for example).
-                {
-                    int32_t seconds = sampleTime.seconds();
-                    struct tm *brokenDownSampleTimePtr = gmtime(reinterpret_cast<time_t*>(&seconds));
-                    struct tm brokenDownSampleTime = *brokenDownSampleTimePtr;
-                    brokenDownSampleTime.tm_sec = retVal.second.millisecondsIntoCurrentGPSMinute/1000;
-                    time_t sampleTimeSeconds = mktime(&brokenDownSampleTime);
-                    sampleTime.seconds(sampleTimeSeconds).microseconds((retVal.second.millisecondsIntoCurrentGPSMinute%1000)*1000);
+                if (!DONT_USE_GPSTIME) {
+                    int32_t sampleTimeSeconds = sampleTime.seconds();
+
+                    // Get seconds from current minute.
+                    struct tm brokenDownSampleTime;
+                    localtime_r(reinterpret_cast<time_t*>(&sampleTimeSeconds), &brokenDownSampleTime);
+
+                    // Get GPS seconds into current minute.
+                    const int32_t secondsIntoCurrentGPSMinute = retVal.second.millisecondsIntoCurrentGPSMinute/1000;
+
+                    // Correct sample time stamp.
+                    sampleTime.seconds(sampleTimeSeconds + (brokenDownSampleTime.tm_sec - secondsIntoCurrentGPSMinute)).microseconds((retVal.second.millisecondsIntoCurrentGPSMinute%1000)*1000);
                 }
 
                 opendlv::proxy::AccelerationReading msg1 = retVal.second.acceleration;
@@ -97,13 +103,6 @@ int32_t main(int32_t argc, char **argv) {
                     {
                         std::stringstream buffer;
                         msg2.accept([](uint32_t, const std::string &, const std::string &) {},
-                                   [&buffer](uint32_t, std::string &&, std::string &&n, auto v) { buffer << n << " = " << v << '\n'; },
-                                   []() {});
-                        std::cout << buffer.str() << std::endl;
-                    }
-                    {
-                        std::stringstream buffer;
-                        msg3.accept([](uint32_t, const std::string &, const std::string &) {},
                                    [&buffer](uint32_t, std::string &&, std::string &&n, auto v) { buffer << n << " = " << v << '\n'; },
                                    []() {});
                         std::cout << buffer.str() << std::endl;
