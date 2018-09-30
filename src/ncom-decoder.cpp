@@ -22,6 +22,7 @@
 #include <cstring>
 #include <ctime>
 #include <array>
+#include <iostream>
 #include <sstream>
 #include <string>
 
@@ -29,18 +30,41 @@ std::pair<bool, NCOMDecoder::NCOMMessages> NCOMDecoder::decode(const std::string
     bool retVal{false};
     NCOMDecoder::NCOMMessages msg;
 
-    constexpr std::size_t NCOM_PACKET_LENGTH{72};
-    constexpr uint8_t NCOM_FIRST_BYTE{0xE7};
+    const constexpr std::size_t NCOM_PACKET_LENGTH{72};
+    const constexpr uint8_t NCOM_FIRST_BYTE{0xE7};
     if ( (NCOM_PACKET_LENGTH == data.size()) && (NCOM_FIRST_BYTE == static_cast<uint8_t>(data.at(0))) ) {
         std::stringstream buffer{data};
 
+        // Time stamping.
         {
-            // Move to where the timestamp is encoded.
-            constexpr uint32_t START_OF_TIMESTAMP{1};
-            buffer.seekg(START_OF_TIMESTAMP);
+            // Test for channel 0 that has complete time stamp.
+            {
+                const constexpr uint32_t START_OF_CHANNEL{62};
+                buffer.seekg(START_OF_CHANNEL);
+                char channel{0};
+                buffer.read(&channel, sizeof(char));
+                if (0 == channel) {
+                    const constexpr uint32_t START_OF_GPSMINUTES{63};
+                    buffer.seekg(START_OF_GPSMINUTES);
+                    buffer.read(reinterpret_cast<char*>(&m_gpsMinutes), sizeof(uint32_t));
+                    m_gpsMinutes = le32toh(m_gpsMinutes);
+                }
+            }
 
-            buffer.read(reinterpret_cast<char*>(&(msg.millisecondsIntoCurrentGPSMinute)), 2);
-            msg.millisecondsIntoCurrentGPSMinute = le16toh(msg.millisecondsIntoCurrentGPSMinute);
+            // When we have a GPS minute from a previous run:
+            if (0 < m_gpsMinutes) {
+                // Move to where the timestamp is encoded as we have a valid GPS
+                // minute time stamp either from the current cycle or from a previous one.
+                const constexpr uint32_t START_OF_TIMESTAMP{1};
+                uint16_t millisecondsIntoCurrentGPSMinute{0};
+                buffer.seekg(START_OF_TIMESTAMP);
+                buffer.read(reinterpret_cast<char*>(&(millisecondsIntoCurrentGPSMinute)), sizeof(uint16_t));
+                millisecondsIntoCurrentGPSMinute = le16toh(millisecondsIntoCurrentGPSMinute);
+
+                const constexpr int32_t GPS_EPOCH_OFFSET{315964800};
+                const constexpr int32_t GPS_LEAP_SECONDS{18};
+                msg.sampleTime.seconds(GPS_EPOCH_OFFSET - GPS_LEAP_SECONDS + 60*static_cast<int32_t>(m_gpsMinutes) + static_cast<int32_t>(millisecondsIntoCurrentGPSMinute)/1000).microseconds((millisecondsIntoCurrentGPSMinute%1000)*1000);
+            }
         }
 
         // Decode acceleration.
@@ -53,7 +77,7 @@ std::pair<bool, NCOMDecoder::NCOMMessages> NCOMDecoder::decode(const std::string
             int32_t value{0};
             {
                 // Move to where acceleration X is encoded.
-                constexpr uint32_t START_OF_ACCELERATIONX{3};
+                const constexpr uint32_t START_OF_ACCELERATIONX{3};
                 buffer.seekg(START_OF_ACCELERATIONX);
 
                 // Extract only three bytes from NCOM.
@@ -67,7 +91,7 @@ std::pair<bool, NCOMDecoder::NCOMMessages> NCOMDecoder::decode(const std::string
             }
             {
                 // Move to where acceleration Y is encoded.
-                constexpr uint32_t START_OF_ACCELERATIONY{6};
+                const constexpr uint32_t START_OF_ACCELERATIONY{6};
                 buffer.seekg(START_OF_ACCELERATIONY);
 
                 // Extract only three bytes from NCOM.
@@ -81,7 +105,7 @@ std::pair<bool, NCOMDecoder::NCOMMessages> NCOMDecoder::decode(const std::string
             }
             {
                 // Move to where acceleration Z is encoded.
-                constexpr uint32_t START_OF_ACCELERATIONZ{9};
+                const constexpr uint32_t START_OF_ACCELERATIONZ{9};
                 buffer.seekg(START_OF_ACCELERATIONZ);
 
                 // Extract only three bytes from NCOM.
@@ -109,7 +133,7 @@ std::pair<bool, NCOMDecoder::NCOMMessages> NCOMDecoder::decode(const std::string
             int32_t value{0};
             {
                 // Move to where angular rate X is encoded.
-                constexpr uint32_t START_OF_ANGULARRATEX{12};
+                const constexpr uint32_t START_OF_ANGULARRATEX{12};
                 buffer.seekg(START_OF_ANGULARRATEX);
 
                 // Extract only three bytes from NCOM.
@@ -123,7 +147,7 @@ std::pair<bool, NCOMDecoder::NCOMMessages> NCOMDecoder::decode(const std::string
             }
             {
                 // Move to where angular rate Y is encoded.
-                constexpr uint32_t START_OF_ANGULARRATEY{15};
+                const constexpr uint32_t START_OF_ANGULARRATEY{15};
                 buffer.seekg(START_OF_ANGULARRATEY);
 
                 // Extract only three bytes from NCOM.
@@ -137,7 +161,7 @@ std::pair<bool, NCOMDecoder::NCOMMessages> NCOMDecoder::decode(const std::string
             }
             {
                 // Move to where angular rate Z is encoded.
-                constexpr uint32_t START_OF_ANGULARRATEZ{18};
+                const constexpr uint32_t START_OF_ANGULARRATEZ{18};
                 buffer.seekg(START_OF_ANGULARRATEZ);
 
                 // Extract only three bytes from NCOM.
@@ -161,7 +185,7 @@ std::pair<bool, NCOMDecoder::NCOMMessages> NCOMDecoder::decode(const std::string
             double longitude{0.0};
 
             // Move to where latitude/longitude are encoded.
-            constexpr uint32_t START_OF_LAT_LON{23};
+            const constexpr uint32_t START_OF_LAT_LON{23};
             buffer.seekg(START_OF_LAT_LON);
             buffer.read(reinterpret_cast<char*>(&latitude), sizeof(double));
             buffer.read(reinterpret_cast<char*>(&longitude), sizeof(double));
@@ -178,7 +202,7 @@ std::pair<bool, NCOMDecoder::NCOMMessages> NCOMDecoder::decode(const std::string
             float altitude{0.0f};
 
             // Move to where altitude is encoded.
-            constexpr uint32_t START_OF_ALT{39};
+            const constexpr uint32_t START_OF_ALT{39};
             buffer.seekg(START_OF_ALT);
             buffer.read(reinterpret_cast<char*>(&altitude), sizeof(float));
 
@@ -198,7 +222,7 @@ std::pair<bool, NCOMDecoder::NCOMMessages> NCOMDecoder::decode(const std::string
             int32_t value{0};
             {
                 // Move to where north velocity is encoded.
-                constexpr uint32_t START_OF_NORTH_VELOCITY{43};
+                const constexpr uint32_t START_OF_NORTH_VELOCITY{43};
                 buffer.seekg(START_OF_NORTH_VELOCITY);
 
                 // Extract only three bytes from NCOM.
@@ -212,7 +236,7 @@ std::pair<bool, NCOMDecoder::NCOMMessages> NCOMDecoder::decode(const std::string
             }
             {
                 // Move to where east velocity is encoded.
-                constexpr uint32_t START_OF_EAST_VELOCITY{46};
+                const constexpr uint32_t START_OF_EAST_VELOCITY{46};
                 buffer.seekg(START_OF_EAST_VELOCITY);
 
                 // Extract only three bytes from NCOM.
@@ -226,7 +250,7 @@ std::pair<bool, NCOMDecoder::NCOMMessages> NCOMDecoder::decode(const std::string
             }
             {
                 // Move to where down velocity is encoded.
-                constexpr uint32_t START_OF_DOWN_VELOCITY{49};
+                const constexpr uint32_t START_OF_DOWN_VELOCITY{49};
                 buffer.seekg(START_OF_DOWN_VELOCITY);
 
                 // Extract only three bytes from NCOM.
@@ -247,7 +271,7 @@ std::pair<bool, NCOMDecoder::NCOMMessages> NCOMDecoder::decode(const std::string
             float heading{0.0f};
 
             // Move to where heading is encoded.
-            constexpr uint32_t START_OF_HEADING{52};
+            const constexpr uint32_t START_OF_HEADING{52};
             buffer.seekg(START_OF_HEADING);
 
             // Extract only three bytes from NCOM.
@@ -277,7 +301,7 @@ std::pair<bool, NCOMDecoder::NCOMMessages> NCOMDecoder::decode(const std::string
             float pitch{0.0f};
 
             // Move to where pitch is encoded.
-            constexpr uint32_t START_OF_PITCH{55};
+            const constexpr uint32_t START_OF_PITCH{55};
             buffer.seekg(START_OF_PITCH);
 
             // Extract only three bytes from NCOM.
@@ -304,7 +328,7 @@ std::pair<bool, NCOMDecoder::NCOMMessages> NCOMDecoder::decode(const std::string
             float roll{0.0f};
 
             // Move to where roll is encoded.
-            constexpr uint32_t START_OF_ROLL{58};
+            const constexpr uint32_t START_OF_ROLL{58};
             buffer.seekg(START_OF_ROLL);
 
             // Extract only three bytes from NCOM.

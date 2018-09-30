@@ -53,21 +53,11 @@ int32_t main(int32_t argc, char **argv) {
             auto retVal = decoder.decode(d);
             if (retVal.first) {
                 cluon::data::TimeStamp sampleTime = cluon::time::convert(tp);
-                // Set time stamp from OxTS unit (milliseconds into current GPS
-                // minute assuming that the current computing unit is synced
-                // to GPS time using PTP for example).
-                if (!DONT_USE_GPSTIME) {
-                    int32_t sampleTimeSeconds = sampleTime.seconds();
 
-                    // Get seconds from current minute.
-                    struct tm brokenDownSampleTime;
-                    localtime_r(reinterpret_cast<time_t*>(&sampleTimeSeconds), &brokenDownSampleTime);
-
-                    // Get GPS seconds into current minute.
-                    const int32_t secondsIntoCurrentGPSMinute = retVal.second.millisecondsIntoCurrentGPSMinute/1000;
-
-                    // Correct sample time stamp.
-                    sampleTime.seconds(sampleTimeSeconds + (brokenDownSampleTime.tm_sec - secondsIntoCurrentGPSMinute)).microseconds((retVal.second.millisecondsIntoCurrentGPSMinute%1000)*1000);
+                // Check whether we should use the OxTS' GPS time for sample time
+                // and whether we have a valid time stamp.
+                if ( !DONT_USE_GPSTIME && (0 < cluon::time::toMicroseconds(retVal.second.sampleTime)) ) {
+                    sampleTime = retVal.second.sampleTime;
                 }
 
                 opendlv::proxy::AccelerationReading msg1 = retVal.second.acceleration;

@@ -27,7 +27,7 @@ class NCOMDecoder {
    public:
     class NCOMMessages {
        public:
-        uint16_t millisecondsIntoCurrentGPSMinute{0};
+        cluon::data::TimeStamp sampleTime{};
         opendlv::proxy::AccelerationReading acceleration{};
         opendlv::proxy::AngularVelocityReading angularVelocity{};
         opendlv::proxy::GeodeticWgs84Reading position{};
@@ -51,6 +51,9 @@ class NCOMDecoder {
 
    public:
     std::pair<bool, NCOMMessages> decode(const std::string &data) noexcept;
+
+   private:
+    uint32_t m_gpsMinutes{0};
 };
 
 #endif
