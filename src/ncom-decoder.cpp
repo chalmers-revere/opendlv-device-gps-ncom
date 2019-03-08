@@ -121,6 +121,7 @@ std::pair<bool, NCOMDecoder::NCOMMessages> NCOMDecoder::decode(const std::string
             msg.acceleration.accelerationX(accelerationX)
                             .accelerationY(accelerationY)
                             .accelerationZ(accelerationZ);
+            retVal = true;
         }
 
         // Decode angular velocity.
@@ -177,6 +178,7 @@ std::pair<bool, NCOMDecoder::NCOMMessages> NCOMDecoder::decode(const std::string
             msg.angularVelocity.angularVelocityX(angularRateX)
                                .angularVelocityY(angularRateY)
                                .angularVelocityZ(angularRateZ);
+            retVal &= true;
         }
 
         // Decode latitude/longitude.
@@ -195,6 +197,9 @@ std::pair<bool, NCOMDecoder::NCOMMessages> NCOMDecoder::decode(const std::string
             // Update Geolocation.
             msg.geolocation.latitude(msg.position.latitude());
             msg.geolocation.longitude(msg.position.longitude());
+
+            const auto p{(std::fabs(latitude) * std::fabs(longitude))};
+            retVal &= (0 < p) && (p < 90.0*180.0);
         }
 
         // Decode altitude.
@@ -210,6 +215,7 @@ std::pair<bool, NCOMDecoder::NCOMMessages> NCOMDecoder::decode(const std::string
 
             // Update Geolocation.
             msg.geolocation.altitude(msg.altitude.altitude());
+            retVal &= true;
         }
 
         // Decode velocity
@@ -264,6 +270,7 @@ std::pair<bool, NCOMDecoder::NCOMMessages> NCOMDecoder::decode(const std::string
             }
 
             msg.speed.groundSpeed(northVelocity + eastVelocity + downVelocity);
+            retVal &= true;
         }
 
         // Decode heading.
@@ -294,6 +301,7 @@ std::pair<bool, NCOMDecoder::NCOMMessages> NCOMDecoder::decode(const std::string
 
             // Update Geolocation.
             msg.geolocation.heading(msg.heading.northHeading());
+            retVal &= true;
         }
 
         // Decode pitch.
@@ -321,6 +329,7 @@ std::pair<bool, NCOMDecoder::NCOMMessages> NCOMDecoder::decode(const std::string
             }
 
             msg.pitch = pitch;
+            retVal &= true;
         }
 
         // Decode roll.
@@ -348,9 +357,8 @@ std::pair<bool, NCOMDecoder::NCOMMessages> NCOMDecoder::decode(const std::string
             }
 
             msg.roll = roll;
+            retVal &= true;
         }
-
-        retVal = true;
     }
     return std::make_pair(retVal, msg);
 }
