@@ -37,6 +37,8 @@ class NCOMDecoder {
         opendlv::logic::sensation::Geolocation geolocation{};
         float pitch{0.0f};
         float roll{0.0f};
+        // Added by Yue Kang:
+        opendlv::logic::sensation::Equilibrioception equilibrioception{};
     };
 
    private:

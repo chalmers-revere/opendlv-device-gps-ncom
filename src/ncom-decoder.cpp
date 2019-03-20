@@ -273,6 +273,124 @@ std::pair<bool, NCOMDecoder::NCOMMessages> NCOMDecoder::decode(const std::string
             retVal &= true;
         }
 
+        // Added by Yue Kang
+        // Integrate linear and angular velocities into equilibrioception
+        {
+            float angularRateX{0.0f};
+            float angularRateY{0.0f};
+            float angularRateZ{0.0f};
+
+            std::array<char, 4> tmp{0, 0, 0, 0};
+            int32_t value{0};
+            {
+                // Move to where angular rate X is encoded.
+                const constexpr uint32_t START_OF_ANGULARRATEX{12};
+                buffer.seekg(START_OF_ANGULARRATEX);
+
+                // Extract only three bytes from NCOM.
+                buffer.read(tmp.data(), 3);
+                std::memcpy(&value, tmp.data(), 4);
+                value = le32toh(value) & 0xFFFFFF;
+                if ((value & 0x800000) == 0x800000) {
+                    value = -1 * ((~value & 0xFFFFFF) + 1);
+                }
+                angularRateX = value * 1e-5f;
+            }
+            {
+                // Move to where angular rate Y is encoded.
+                const constexpr uint32_t START_OF_ANGULARRATEY{15};
+                buffer.seekg(START_OF_ANGULARRATEY);
+
+                // Extract only three bytes from NCOM.
+                buffer.read(tmp.data(), 3);
+                std::memcpy(&value, tmp.data(), 4);
+                value = le32toh(value) & 0xFFFFFF;
+                if ((value & 0x800000) == 0x800000) {
+                    value = -1 * ((~value & 0xFFFFFF) + 1);
+                }
+                angularRateY = value * 1e-5f;
+            }
+            {
+                // Move to where angular rate Z is encoded.
+                const constexpr uint32_t START_OF_ANGULARRATEZ{18};
+                buffer.seekg(START_OF_ANGULARRATEZ);
+
+                // Extract only three bytes from NCOM.
+                buffer.read(tmp.data(), 3);
+                std::memcpy(&value, tmp.data(), 4);
+                value = le32toh(value) & 0xFFFFFF;
+                if ((value & 0x800000) == 0x800000) {
+                    value = -1 * ((~value & 0xFFFFFF) + 1);
+                }
+                angularRateZ = value * 1e-5f;
+            }
+
+            float northVelocity{0.0f};
+            float eastVelocity{0.0f};
+            float downVelocity{0.0f};
+
+            tmp.fill(0);
+            value = 0;
+            {
+                // Move to where north velocity is encoded.
+                const constexpr uint32_t START_OF_NORTH_VELOCITY{43};
+                buffer.seekg(START_OF_NORTH_VELOCITY);
+
+                // Extract only three bytes from NCOM.
+                buffer.read(tmp.data(), 3);
+                std::memcpy(&value, tmp.data(), 4);
+                value = le32toh(value) & 0xFFFFFF;
+                if ((value & 0x800000) == 0x800000) {
+                    value = -1 * ((~value & 0xFFFFFF) + 1);
+                }
+                northVelocity = value * 1e-4f;
+            }
+            {
+                // Move to where east velocity is encoded.
+                const constexpr uint32_t START_OF_EAST_VELOCITY{46};
+                buffer.seekg(START_OF_EAST_VELOCITY);
+
+                // Extract only three bytes from NCOM.
+                buffer.read(tmp.data(), 3);
+                std::memcpy(&value, tmp.data(), 4);
+                value = le32toh(value) & 0xFFFFFF;
+                if ((value & 0x800000) == 0x800000) {
+                    value = -1 * ((~value & 0xFFFFFF) + 1);
+                }
+                eastVelocity = value * -1e-4f;
+            }
+            {
+                // Move to where down velocity is encoded.
+                const constexpr uint32_t START_OF_DOWN_VELOCITY{49};
+                buffer.seekg(START_OF_DOWN_VELOCITY);
+
+                // Extract only three bytes from NCOM.
+                buffer.read(tmp.data(), 3);
+                std::memcpy(&value, tmp.data(), 4);
+                value = le32toh(value) & 0xFFFFFF;
+                if ((value & 0x800000) == 0x800000) {
+                    value = -1 * ((~value & 0xFFFFFF) + 1);
+                }
+                downVelocity = value * -1e-4f;
+            }
+
+            // msg.speed.groundSpeed(northVelocity + eastVelocity + downVelocity);
+
+            // msg.angularVelocity.angularVelocityX(angularRateX)
+            //                    .angularVelocityY(angularRateY)
+            //                    .angularVelocityZ(angularRateZ);
+
+            // The following data is currently NOT CONVERTED to local frame
+            // Currently the conversion from the receiver end is necessary
+            msg.equilibrioception.vx(northVelocity)
+                                 .vy(eastVelocity)
+                                 .vz(downVelocity)
+                                 .rollRate(angularRateX)
+                                 .pitchRate(angularRateY)
+                                 .yawRate(angularRateZ);
+            retVal &= true;
+        }
+
         // Decode heading.
         {
             float heading{0.0f};
