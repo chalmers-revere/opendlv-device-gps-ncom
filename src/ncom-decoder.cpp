@@ -178,6 +178,11 @@ std::pair<bool, NCOMDecoder::NCOMMessages> NCOMDecoder::decode(const std::string
             msg.angularVelocity.angularVelocityX(angularRateX)
                                .angularVelocityY(angularRateY)
                                .angularVelocityZ(angularRateZ);
+
+            msg.equilibrioception.rollRate(angularRateX)
+                                 .pitchRate(angularRateY)
+                                 .yawRate(angularRateZ);
+
             retVal &= true;
         }
 
@@ -270,6 +275,11 @@ std::pair<bool, NCOMDecoder::NCOMMessages> NCOMDecoder::decode(const std::string
             }
 
             msg.speed.groundSpeed(northVelocity + eastVelocity + downVelocity);
+
+            msg.equilibrioception.vx(northVelocity)
+                                 .vy(eastVelocity)
+                                 .vz(downVelocity);
+
             retVal &= true;
         }
 
