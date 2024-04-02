@@ -1,3 +1,5 @@
+Moved to https://git.opendlv.org.
+
 ## OpenDLV Microservice to interface with OXTS GPS/INSS units
 
 This repository provides source code to interface with an OXTS GPS/INSS unit
